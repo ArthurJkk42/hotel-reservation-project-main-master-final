@@ -16,8 +16,8 @@ public interface RoomDao extends JpaRepository<Room, Long> {
     @Query(value = "select * from tb_room a where a.hotel_id = ?1", nativeQuery = true)
     List<Room> findRoomsByHotel(Long hotelId);
 
-    @Query(value = "select * from tb_room r where r.hotel_id = hotel:id and hotel:hotelStatus = :#{#ACTIVE.name()} and r.bedType = :#{#bedType.name()}", nativeQuery = true)
-    List<Room> findAllByActiveAndHotelAndBedType(@Param("hotel") Hotel hotel, @Param("bedType") EBedType bedType);
+    @Query("select r from Room r where r.hotel = ?1 and r.bedType = ?2 and r.capacity >= ?3")
+    List<Room> findAllByActiveTrueAndHotelAndBedTypeAndCapacity(Hotel hotel, EBedType bedType, int capacity);
 
 
 }

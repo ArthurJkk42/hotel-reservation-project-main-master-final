@@ -6,9 +6,9 @@ import com.megacom.hotelreservationprojectmainmasterfinal.mappers.HotelMapper;
 import com.megacom.hotelreservationprojectmainmasterfinal.mappers.ReviewMapper;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.dto.HotelDto;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.dto.ReviewDto;
-import com.megacom.hotelreservationprojectmainmasterfinal.models.entity.Hotel;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.entity.Review;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.response.Message;
+import com.megacom.hotelreservationprojectmainmasterfinal.service.HotelService;
 import com.megacom.hotelreservationprojectmainmasterfinal.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,12 +25,17 @@ public class ReviewServiceImpl implements ReviewService {
     private ReviewDao reviewDao;
     @Autowired
     private HotelDao hotelDao;
+    @Autowired
+    private HotelService hotelService;
 
     HotelMapper hotelMapper = HotelMapper.INSTANCE;
     ReviewMapper reviewMapper = ReviewMapper.INSTANCE;
 
     @Override
     public ResponseEntity<?> save(ReviewDto reviewDto) {
+        if (reviewDto.getScore() > 5 || reviewDto.getScore() < 0) {
+            return new ResponseEntity<>(Message.of("Invalid score input"), HttpStatus.NOT_ACCEPTABLE);
+        }
         Review review = reviewMapper.toEntity(reviewDto);
 
         review.setReviewDate(new Date());
@@ -45,6 +50,9 @@ public class ReviewServiceImpl implements ReviewService {
         if (!isExists) {
             return new ResponseEntity<>(Message.of("Review not found"), HttpStatus.NOT_FOUND);
         } else {
+            if (reviewDto.getScore() > 5 || reviewDto.getScore() < 0) {
+                return new ResponseEntity<>(Message.of("Invalid score input"), HttpStatus.NOT_ACCEPTABLE);
+            }
             Review review = reviewMapper.toEntity(reviewDto);
 
             review.setReviewDate(new Date());
@@ -56,13 +64,17 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public ResponseEntity<?> delete(ReviewDto reviewDto) {
-        Review review = reviewMapper.toEntity(reviewDto);
-        review.setActive(false);
-        ResponseEntity<?> deletedReview = update(reviewMapper.toDto(review));
-        if (deletedReview.getStatusCode().equals(HttpStatus.OK)) {
-            return new ResponseEntity<>(deletedReview, HttpStatus.OK);
+        boolean isExists = reviewDao.existsById(reviewDto.getId());
+        if (!isExists) {
+            return new ResponseEntity<>(Message.of("Review not found"), HttpStatus.NOT_FOUND);
         } else {
-            return new ResponseEntity<>(Message.of("Review not deleted"), HttpStatus.NOT_FOUND);
+            Review review = reviewMapper.toEntity(reviewDto);
+
+            review.setReviewDate(new Date());
+            review.setActive(false);
+
+            Review updatedReview = reviewDao.save(review);
+            return new ResponseEntity<>(updatedReview, HttpStatus.OK);
         }
     }
 
@@ -73,9 +85,9 @@ public class ReviewServiceImpl implements ReviewService {
     }
 
     @Override
-    public List<ReviewDto> findAllByHotelAndActive(HotelDto hotelDto) {
-        Hotel hotel = hotelMapper.toEntity(hotelDto);
-        return reviewMapper.toDtoList(reviewDao.findAllByActiveTrueAndHotel(hotel));
+    public List<ReviewDto> findAllByHotelAndActive(Long hotelId) {
+        HotelDto hotelDto = hotelService.findById(hotelId);
+        return reviewMapper.toDtoList(reviewDao.findAllByIsActiveTrueAndHotel(hotelMapper.toEntity(hotelDto)));
     }
 }
 

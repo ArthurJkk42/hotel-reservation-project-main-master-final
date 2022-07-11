@@ -4,9 +4,9 @@ import com.megacom.hotelreservationprojectmainmasterfinal.dao.HotelDao;
 import com.megacom.hotelreservationprojectmainmasterfinal.dao.PriceDao;
 import com.megacom.hotelreservationprojectmainmasterfinal.dao.RoomDao;
 import com.megacom.hotelreservationprojectmainmasterfinal.mappers.HotelMapper;
+import com.megacom.hotelreservationprojectmainmasterfinal.mappers.RoomMapper;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.dto.*;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.entity.Hotel;
-import com.megacom.hotelreservationprojectmainmasterfinal.models.entity.Price;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.enums.EBedType;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.enums.EHotelStatus;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.response.HotelFilterResponse;
@@ -20,12 +20,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
@@ -51,6 +46,7 @@ public class HotelServiceImpl implements HotelService {
     private PriceService priceService;
 
     private final HotelMapper hotelMapper = HotelMapper.INSTANCE;
+    private final RoomMapper roomMapper = RoomMapper.INSTANCE;
 
     @Override
     @Transactional
@@ -93,25 +89,27 @@ public class HotelServiceImpl implements HotelService {
 
     @Override
     public ResponseEntity<?> delete(HotelDto hotelDto) {
-        Hotel hotel = hotelMapper.toEntity(hotelDto);
-        hotel.setHotelStatus(EHotelStatus.DELETED);
-        ResponseEntity<?> deletedHotel = update(hotelMapper.toDto(hotel));
-        if (deletedHotel.getStatusCode().equals(HttpStatus.OK)) {
-            return new ResponseEntity<>(deletedHotel, HttpStatus.OK);
-        } else {
+        boolean isExists = hotelDao.existsById(hotelDto.getId());
+        if (!isExists) {
             return new ResponseEntity<>(Message.of("Hotel not deleted"), HttpStatus.OK);
+        } else {
+            Hotel hotel = hotelMapper.toEntity(hotelDto);
+            hotel.setHotelStatus(EHotelStatus.DELETED);
+            Hotel updatedHotel = hotelDao.save(hotel);
+            return new ResponseEntity<>(updatedHotel, HttpStatus.OK);
         }
     }
 
     @Override
     public ResponseEntity<?> block(HotelDto hotelDto) {
-        Hotel hotel = hotelMapper.toEntity(hotelDto);
-        hotel.setHotelStatus(EHotelStatus.BLOCKED);
-        ResponseEntity<?> deletedHotel = update(hotelMapper.toDto(hotel));
-        if (deletedHotel.getStatusCode().equals(HttpStatus.OK)) {
-            return new ResponseEntity<>(deletedHotel, HttpStatus.OK);
-        } else {
+        boolean isExists = hotelDao.existsById(hotelDto.getId());
+        if (!isExists) {
             return new ResponseEntity<>(Message.of("Hotel not blocked"), HttpStatus.OK);
+        } else {
+            Hotel hotel = hotelMapper.toEntity(hotelDto);
+            hotel.setHotelStatus(EHotelStatus.BLOCKED);
+            Hotel updatedHotel = hotelDao.save(hotel);
+            return new ResponseEntity<>(updatedHotel, HttpStatus.OK);
         }
     }
 
@@ -119,7 +117,7 @@ public class HotelServiceImpl implements HotelService {
     public void countCurrentScore() {
         List<HotelDto> hotelDtoList = findAll();
         hotelDtoList.stream().forEach(x -> {
-            List<ReviewDto> reviewDtoList = reviewService.findAllByHotelAndActive(x);
+            List<ReviewDto> reviewDtoList = reviewService.findAllByHotelAndActive(x.getId());
             Double sum = reviewDtoList.stream().mapToDouble(ReviewDto::getScore).sum();
             Double currentScore = Math.round((sum / reviewDtoList.size()) / 10.0) * 10.0;
 
@@ -159,7 +157,7 @@ public class HotelServiceImpl implements HotelService {
         List<Hotel> availableHotels = new ArrayList<>();
         List<HotelFilterResponse> filteredHotels = new ArrayList<>();
         hotels.stream().forEach(x -> {
-            List<RoomDto> rooms = roomService.findAllRoomsByHotel(x, bedType);
+            List<RoomDto> rooms = roomService.findAllRoomsByHotel(x, bedType, guestCount);
             List<RoomDto> availableRooms = new ArrayList<>();
             rooms.stream().forEach(y -> {
                 List<BookingDto> bookings = bookingService.findAllByRoomAndActive(y);
@@ -169,7 +167,6 @@ public class HotelServiceImpl implements HotelService {
                     AtomicBoolean isBooked = new AtomicBoolean(false);
                     bookings.stream().forEach(z -> {
                         if (checkIsBooked(z, checkInDate, checkOutDate)) {
-                            System.out.println("Room is booked");
                             isBooked.set(true);
                         }
                     });
@@ -214,29 +211,69 @@ public class HotelServiceImpl implements HotelService {
         hotelResponse.setName(hotelResponse.getName());
 
         List<RoomFilterResponse> roomResponse = new ArrayList<>();
-
         roomDtos.stream().forEach(room -> {
-            PriceDto priceDto = priceService.findPriceByRoom(room.getRoomCategory().getId());
-            long daysBetween = checkOut.getTime() - checkIn.getTime();
-            long totalDaysBetween = TimeUnit.DAYS.convert(daysBetween, TimeUnit.MILLISECONDS);
-            double totalPrice = totalDaysBetween * priceDto.getPrice();
+            PriceDto priceForCheckIn = priceService.findPriceByRoom(room.getRoomCategory().getId(), checkIn);
+            PriceDto priceForCheckOut = priceService.findPriceByRoom(room.getRoomCategory().getId(), checkOut);
+            if (priceForCheckIn != null && priceForCheckOut != null) {
+                if (priceForCheckIn.getPrice() == priceForCheckOut.getPrice()) {
+                    long diff = checkOut.getTime() - checkIn.getTime();
+                    int daysBetween = (int) (diff / (1000*60*60*24));
+                    System.out.println(daysBetween);
+                    double totalSum = priceForCheckIn.getPrice() * daysBetween;
 
-            RoomFilterResponse roomFilterResponse = RoomFilterResponse.builder()
-                    .bedType(room.getBedType())
-                    .capacity(room.getCapacity())
-                    .checkInDate(checkIn)
-                    .checkOutDate(checkOut)
-                    .id(room.getId())
-                    .square(room.getSquare())
-                    .wifi(room.isWifi())
-                    .view(room.getView())
-                    .price(totalPrice)
-                    .build();
+                    RoomFilterResponse roomFilterResponse = RoomFilterResponse.builder()
+                            .bedType(room.getBedType())
+                            .capacity(room.getCapacity())
+                            .checkInDate(checkIn)
+                            .checkOutDate(checkOut)
+                            .id(room.getId())
+                            .square(room.getSquare())
+                            .wifi(room.isWifi())
+                            .view(room.getView())
+                            .price(totalSum)
+                            .build();
 
-            roomResponse.add(roomFilterResponse);
+                    roomResponse.add(roomFilterResponse);
+                } else {
+                    long diff = checkOut.getTime() - priceForCheckIn.getEndDate().getTime();
+                    int daysBetween = (int) (diff / (1000*60*60*24));
+                    System.out.println("START: " + daysBetween);
+                    double sumBeginning = daysBetween * priceForCheckIn.getPrice();
+                    long diff2 = checkOut.getTime() - priceForCheckOut.getStartDate().getTime();
+                    int daysBetween2 = (int) (diff2 / (1000*60*60*24));
+                    System.out.println("START: " + daysBetween2);
+                    double sumEnding = daysBetween2 * priceForCheckOut.getPrice();
+                    double totalSum = sumBeginning + sumEnding;
+
+                    RoomFilterResponse roomFilterResponse = RoomFilterResponse.builder()
+                            .bedType(room.getBedType())
+                            .capacity(room.getCapacity())
+                            .checkInDate(checkIn)
+                            .checkOutDate(checkOut)
+                            .id(room.getId())
+                            .square(room.getSquare())
+                            .wifi(room.isWifi())
+                            .view(room.getView())
+                            .price(totalSum)
+                            .build();
+
+                    roomResponse.add(roomFilterResponse);
+                }
+            }
+
         });
 
         hotelResponse.setAvailableRooms(roomResponse);
         return hotelResponse;
+    }
+
+    @Override
+    public ResponseEntity<?> filterByRating(List<HotelFilterResponse> filteredHotels, double rating) {
+        filteredHotels.stream().forEach(x -> {
+            if (x.getCurrentScore() < rating) {
+                filteredHotels.remove(x);
+            }
+        });
+        return new ResponseEntity<>(filteredHotels, HttpStatus.OK);
     }
 }

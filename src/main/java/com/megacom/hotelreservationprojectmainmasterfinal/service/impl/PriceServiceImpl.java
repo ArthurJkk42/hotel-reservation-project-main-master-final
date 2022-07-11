@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-import java.util.List;
 
 @Service
 public class PriceServiceImpl implements PriceService {
@@ -60,18 +59,8 @@ public class PriceServiceImpl implements PriceService {
     }
 
     @Override
-    public PriceDto findPriceByRoom(Long categoryId) {
-        Price price = priceDao.findPriceByRoomCategory(categoryId, new Date());
+    public PriceDto findPriceByRoom(Long categoryId, Date date) {
+        Price price = priceDao.findPriceByRoomCategory(categoryId, date);
         return priceMapper.toDto(price);
-    }
-
-    @Override
-    public List<PriceDto> findPricesByHotel(Long id) {
-        return null;
-    }
-
-    @Override
-    public List<PriceDto> findPricesByCity() {
-        return null;
     }
 }

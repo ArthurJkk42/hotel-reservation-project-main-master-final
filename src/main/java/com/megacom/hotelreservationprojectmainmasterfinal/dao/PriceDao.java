@@ -11,6 +11,6 @@ import java.util.Date;
 @Repository
 public interface PriceDao extends JpaRepository<Price, Long> {
 
-    @Query(value = "select * from tb_price where p.category_id = :categoryId and p.startDate <= :now and p.endDate >= :now", nativeQuery = true)
-    Price findPriceByRoomCategory(@Param("categoryId") Long categoryId, @Param("now") Date currentDate);
+    @Query(value = "select * from tb_price p where p.room_category_id = :categoryId and p.start_date <= :now and p.end_date >= :now", nativeQuery = true)
+    Price findPriceByRoomCategory(@Param("categoryId") Long categoryId, @Param("now") Date date);
 }

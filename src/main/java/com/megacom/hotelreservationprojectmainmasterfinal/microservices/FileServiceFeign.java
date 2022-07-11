@@ -11,6 +11,6 @@ public interface FileServiceFeign {
 
     String boundary = Long.toHexString(System.currentTimeMillis());
 
-    @PostMapping(value = "/api/v1/file/upload", consumes = "mulripart/form-data")
+    @PostMapping(value = "/api/v1/file/upload", consumes = "multipart/form-data")
     FileServiceResponse upload(@RequestPart MultipartFile file);
 }

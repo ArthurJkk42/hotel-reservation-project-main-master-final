@@ -13,10 +13,10 @@ public class Booking {
     @Id
     @GeneratedValue
     private Long id;
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "hotel_id")
     private Hotel hotel;
-    @OneToOne
+    @ManyToOne
     @JoinColumn(name = "room_id")
     private Room room;
     private Date checkInDate;

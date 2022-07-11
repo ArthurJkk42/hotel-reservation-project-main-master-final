@@ -3,6 +3,7 @@ package com.megacom.hotelreservationprojectmainmasterfinal.service;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.dto.PriceDto;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.entity.Room;
 
+import java.util.Date;
 import java.util.List;
 
 public interface PriceService {
@@ -19,9 +20,5 @@ public interface PriceService {
 
     PriceDto delete(PriceDto priceDto);
 
-    PriceDto findPriceByRoom(Long categoryId);
-
-    List<PriceDto> findPricesByHotel(Long id);
-
-    List<PriceDto> findPricesByCity();
+    PriceDto findPriceByRoom(Long categoryId, Date date);
 }

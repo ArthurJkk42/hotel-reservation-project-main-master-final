@@ -41,6 +41,18 @@ public class CityServiceImpl implements CityService {
     }
 
     @Override
+    public ResponseEntity<?> delete(CityDto cityDto) {
+        boolean isExists = cityDao.existsById(cityDto.getId());
+        if (!isExists) {
+            return new ResponseEntity<>(Message.of("City not deleted"), HttpStatus.NOT_FOUND);
+        } else {
+            City savedCity = cityDao.save(cityMapper.toEntity(cityDto));
+            savedCity.setActive(false);
+            return new ResponseEntity<>(cityMapper.toDto(savedCity), HttpStatus.OK);
+        }
+    }
+
+    @Override
     public CityDto findById(Long cityId) {
         City city = cityDao.findById(cityId).orElse(null);
         return cityMapper.toDto(city);

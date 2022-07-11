@@ -25,12 +25,9 @@ import java.util.List;
 @Service
 public class BookingServiceImpl implements BookingService {
 
-    @Autowired
-    private BookingDao bookingDao;
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private BookingHistoryService bookingHistoryService;
+    @Autowired private BookingDao bookingDao;
+    @Autowired private UserService userService;
+    @Autowired private BookingHistoryService bookingHistoryService;
 
     BookingMapper bookingMapper = BookingMapper.INSTANCE;
     RoomMapper roomMapper = RoomMapper.INSTANCE;
@@ -40,23 +37,28 @@ public class BookingServiceImpl implements BookingService {
     @Transactional
     public ResponseEntity<?> save(BookingDto bookingDto) {
         try {
-            BookingHistoryDto bookingHistoryDto = new BookingHistoryDto();
-            bookingHistoryDto.setBooking(bookingDto);
-            bookingHistoryDto.setChangeDate(null);
-            bookingHistoryDto.setComment(bookingDto.getComment());
-            bookingHistoryDto.setUser(bookingDto.getUser()); //TODO
-            bookingHistoryDto.setCheckInDate(bookingDto.getCheckInDate());
-            bookingHistoryDto.setCheckOutDate(bookingDto.getCheckOutDate());
-            bookingHistoryDto.setGuest(bookingDto.getUser());
-            bookingHistoryDto.setStatus(bookingDto.getStatus());
-            bookingHistoryDto.setSum(bookingDto.getSum());
-
-            BookingHistoryDto savedBookingHistory = bookingHistoryService.save(bookingHistoryDto);
-
+            if (bookingDto.getCheckInDate().after(bookingDto.getCheckOutDate())
+                || bookingDto.getCheckInDate().equals(bookingDto.getCheckOutDate())
+                || bookingDto.getCheckOutDate().before(bookingDto.getCheckInDate())) {
+                return new ResponseEntity<>(Message.of("Invalid date input"), HttpStatus.NOT_ACCEPTABLE);
+            }
             Booking booking = bookingMapper.toEntity(bookingDto);
             booking.setStatus(EBookingStatus.BOOKED);
             Booking savedBooking = bookingDao.save(booking);
-            return new ResponseEntity<>(savedBooking, HttpStatus.OK);
+            BookingDto savedBookingDto = bookingMapper.toDto(savedBooking);
+
+            BookingHistoryDto bookingHistoryDto = new BookingHistoryDto();
+            bookingHistoryDto.setBooking(savedBookingDto);
+            bookingHistoryDto.setChangeDate(new Date());
+            bookingHistoryDto.setComment(savedBookingDto.getComment());
+            bookingHistoryDto.setUser(savedBookingDto.getUser());
+            bookingHistoryDto.setCheckInDate(savedBookingDto.getCheckInDate());
+            bookingHistoryDto.setCheckOutDate(savedBookingDto.getCheckOutDate());
+            bookingHistoryDto.setGuest(savedBookingDto.getUser());
+            bookingHistoryDto.setStatus(savedBookingDto.getStatus());
+            bookingHistoryDto.setSum(savedBookingDto.getSum());
+            BookingHistoryDto savedBookingHistory = bookingHistoryService.save(bookingHistoryDto);
+            return new ResponseEntity<>(savedBookingDto, HttpStatus.OK);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
@@ -75,30 +77,35 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    @Transactional
+//    @Transactional
     public ResponseEntity<?> update(BookingDto bookingDto) {
         boolean isExists = bookingDao.existsById(bookingDto.getId());
         if (!isExists) {
             return new ResponseEntity<>(Message.of("Booking not found"), HttpStatus.NOT_FOUND);
         } else {
             try {
-                BookingHistoryDto bookingHistoryDto = new BookingHistoryDto();
-                bookingHistoryDto.setBooking(bookingDto);
-                bookingHistoryDto.setChangeDate(new Date());
-                bookingHistoryDto.setComment(bookingDto.getComment());
-                bookingHistoryDto.setUser(bookingDto.getUser());
-                bookingHistoryDto.setCheckInDate(bookingDto.getCheckInDate());
-                bookingHistoryDto.setCheckOutDate(bookingDto.getCheckOutDate());
-                bookingHistoryDto.setUser(bookingDto.getUser());
-                bookingHistoryDto.setStatus(bookingDto.getStatus());
-                bookingHistoryDto.setSum(bookingDto.getSum());
+                if (bookingDto.getCheckInDate().after(bookingDto.getCheckOutDate())
+                        || bookingDto.getCheckInDate().equals(bookingDto.getCheckOutDate())
+                        || bookingDto.getCheckOutDate().before(bookingDto.getCheckInDate())) {
+                    return new ResponseEntity<>(Message.of("Invalid date input"), HttpStatus.NOT_ACCEPTABLE);
+                }
+                Booking booking = bookingMapper.toEntity(bookingDto);
+                Booking savedBooking = bookingDao.save(booking);
+                BookingDto savedBookingDto  = bookingMapper.toDto(savedBooking);
 
+                BookingHistoryDto bookingHistoryDto = new BookingHistoryDto();
+                bookingHistoryDto.setBooking(savedBookingDto);
+                bookingHistoryDto.setChangeDate(new Date());
+                bookingHistoryDto.setComment(savedBookingDto.getComment());
+                bookingHistoryDto.setGuest(savedBookingDto.getUser());
+                bookingHistoryDto.setCheckInDate(savedBookingDto.getCheckInDate());
+                bookingHistoryDto.setCheckOutDate(savedBookingDto.getCheckOutDate());
+                bookingHistoryDto.setUser(savedBookingDto.getUser());
+                bookingHistoryDto.setStatus(savedBookingDto.getStatus());
+                bookingHistoryDto.setSum(savedBookingDto.getSum());
                 BookingHistoryDto updatedBookingHistoryDto = bookingHistoryService.save(bookingHistoryDto);
 
-                Booking booking = bookingMapper.toEntity(bookingDto);
-                booking.setStatus(EBookingStatus.BOOKED);
-                Booking savedBooking = bookingDao.save(booking);
-                return new ResponseEntity<>(savedBooking, HttpStatus.OK);
+                return new ResponseEntity<>(savedBookingDto, HttpStatus.OK);
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
@@ -113,23 +120,29 @@ public class BookingServiceImpl implements BookingService {
             return new ResponseEntity<>(Message.of("Booking not found"), HttpStatus.NOT_FOUND);
         } else {
             try {
-                BookingHistoryDto bookingHistoryDto = new BookingHistoryDto();
-                bookingHistoryDto.setBooking(bookingDto);
-                bookingHistoryDto.setChangeDate(new Date());
-                bookingHistoryDto.setComment(comment);
-                bookingHistoryDto.setUser(bookingDto.getUser());
-                bookingHistoryDto.setCheckInDate(bookingDto.getCheckInDate());
-                bookingHistoryDto.setCheckOutDate(bookingDto.getCheckOutDate());
-                bookingHistoryDto.setUser(bookingDto.getUser());
-                bookingHistoryDto.setStatus(bookingDto.getStatus());
-                bookingHistoryDto.setSum(bookingDto.getSum());
-
-                BookingHistoryDto cancelledBookingHistoryDto = bookingHistoryService.save(bookingHistoryDto);
-
+                if (bookingDto.getCheckInDate().after(bookingDto.getCheckOutDate())
+                        || bookingDto.getCheckInDate().equals(bookingDto.getCheckOutDate())
+                        || bookingDto.getCheckOutDate().before(bookingDto.getCheckInDate())) {
+                    return new ResponseEntity<>(Message.of("Invalid date input"), HttpStatus.NOT_ACCEPTABLE);
+                }
                 Booking booking = bookingMapper.toEntity(bookingDto);
                 booking.setStatus(EBookingStatus.CANCELLED);
-                Booking canceledBooking = bookingDao.save(booking);
-                return new ResponseEntity<>(canceledBooking, HttpStatus.OK);
+                Booking savedBooking = bookingDao.save(booking);
+                BookingDto savedBookingDto  = bookingMapper.toDto(savedBooking);
+
+                BookingHistoryDto bookingHistoryDto = new BookingHistoryDto();
+                bookingHistoryDto.setBooking(savedBookingDto);
+                bookingHistoryDto.setChangeDate(new Date());
+                bookingHistoryDto.setComment(savedBookingDto.getComment());
+                bookingHistoryDto.setGuest(savedBookingDto.getUser());
+                bookingHistoryDto.setCheckInDate(savedBookingDto.getCheckInDate());
+                bookingHistoryDto.setCheckOutDate(savedBookingDto.getCheckOutDate());
+                bookingHistoryDto.setUser(savedBookingDto.getUser());
+                bookingHistoryDto.setStatus(savedBookingDto.getStatus());
+                bookingHistoryDto.setSum(savedBookingDto.getSum());
+                BookingHistoryDto updatedBookingHistoryDto = bookingHistoryService.save(bookingHistoryDto);
+
+                return new ResponseEntity<>(savedBookingDto, HttpStatus.OK);
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }
@@ -144,23 +157,29 @@ public class BookingServiceImpl implements BookingService {
             return new ResponseEntity<>(Message.of("Booking not found"), HttpStatus.NOT_FOUND);
         } else {
             try {
-                BookingHistoryDto bookingHistoryDto = new BookingHistoryDto();
-                bookingHistoryDto.setBooking(bookingDto);
-                bookingHistoryDto.setChangeDate(new Date());
-                bookingHistoryDto.setComment(bookingDto.getComment());
-                bookingHistoryDto.setUser(bookingDto.getUser());
-                bookingHistoryDto.setCheckInDate(bookingDto.getCheckInDate());
-                bookingHistoryDto.setCheckOutDate(bookingDto.getCheckOutDate());
-                bookingHistoryDto.setUser(bookingDto.getUser());
-                bookingHistoryDto.setStatus(bookingDto.getStatus());
-                bookingHistoryDto.setSum(bookingDto.getSum());
-
-                BookingHistoryDto deletedBookingHistoryDto = bookingHistoryService.save(bookingHistoryDto);
-
+                if (bookingDto.getCheckInDate().after(bookingDto.getCheckOutDate())
+                        || bookingDto.getCheckInDate().equals(bookingDto.getCheckOutDate())
+                        || bookingDto.getCheckOutDate().before(bookingDto.getCheckInDate())) {
+                    return new ResponseEntity<>(Message.of("Invalid date input"), HttpStatus.NOT_ACCEPTABLE);
+                }
                 Booking booking = bookingMapper.toEntity(bookingDto);
-                booking.setStatus(EBookingStatus.CANCELLED);
-                Booking canceledBooking = bookingDao.save(booking);
-                return new ResponseEntity<>(canceledBooking, HttpStatus.OK);
+                booking.setStatus(EBookingStatus.DELETED);
+                Booking savedBooking = bookingDao.save(booking);
+                BookingDto savedBookingDto  = bookingMapper.toDto(savedBooking);
+
+                BookingHistoryDto bookingHistoryDto = new BookingHistoryDto();
+                bookingHistoryDto.setBooking(savedBookingDto);
+                bookingHistoryDto.setChangeDate(new Date());
+                bookingHistoryDto.setComment(savedBookingDto.getComment());
+                bookingHistoryDto.setGuest(savedBookingDto.getUser());
+                bookingHistoryDto.setCheckInDate(savedBookingDto.getCheckInDate());
+                bookingHistoryDto.setCheckOutDate(savedBookingDto.getCheckOutDate());
+                bookingHistoryDto.setUser(savedBookingDto.getUser());
+                bookingHistoryDto.setStatus(savedBookingDto.getStatus());
+                bookingHistoryDto.setSum(savedBookingDto.getSum());
+                BookingHistoryDto updatedBookingHistoryDto = bookingHistoryService.save(bookingHistoryDto);
+
+                return new ResponseEntity<>(savedBookingDto, HttpStatus.OK);
             } catch (Exception ex) {
                 throw new RuntimeException(ex);
             }

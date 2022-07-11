@@ -17,7 +17,7 @@ public interface RoomService {
 
     List<RoomDto> filterByBedType(EBedType eBedType); // required
 
-    List<RoomDto> findAllRoomsByHotel(Hotel hotel, EBedType bedType);
+    List<RoomDto> findAllRoomsByHotel(Hotel hotel, EBedType bedType, int capacity);
 
     List<RoomDto> findByBooking(Long id);
 

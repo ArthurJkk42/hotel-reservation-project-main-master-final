@@ -56,8 +56,8 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public List<RoomDto> findAllRoomsByHotel(Hotel hotel, EBedType bedType) {
-        List<Room> roomList = roomDao.findAllByActiveAndHotelAndBedType(hotel, bedType);
+    public List<RoomDto> findAllRoomsByHotel(Hotel hotel, EBedType bedType, int capacity) {
+        List<Room> roomList = roomDao.findAllByActiveTrueAndHotelAndBedTypeAndCapacity(hotel, bedType, capacity);
         return roomMapper.toDtoList(roomList);
     }
 

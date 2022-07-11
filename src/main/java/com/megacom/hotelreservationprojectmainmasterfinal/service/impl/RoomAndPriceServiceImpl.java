@@ -42,7 +42,7 @@ public class RoomAndPriceServiceImpl implements RoomAndPriceService {
         if (roomAndPriceRequest.getStartDate().equals(roomAndPriceRequest.getEndDate())
                 || roomAndPriceRequest.getStartDate().after(roomAndPriceRequest.getEndDate())
                 || roomAndPriceRequest.getEndDate().before(roomAndPriceRequest.getStartDate())) {
-            return new ResponseEntity<>(Message.of("Invalid date input"), HttpStatus.OK);
+            return new ResponseEntity<>(Message.of("Invalid date input"), HttpStatus.NOT_ACCEPTABLE);
         } else {
             RoomCategoryDto roomCategory = new RoomCategoryDto();
             PriceDto price = new PriceDto();

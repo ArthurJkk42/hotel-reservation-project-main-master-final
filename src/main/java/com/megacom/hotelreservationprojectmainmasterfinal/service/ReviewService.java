@@ -1,6 +1,5 @@
 package com.megacom.hotelreservationprojectmainmasterfinal.service;
 
-import com.megacom.hotelreservationprojectmainmasterfinal.models.dto.HotelDto;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.dto.ReviewDto;
 import org.springframework.http.ResponseEntity;
 
@@ -16,5 +15,5 @@ public interface ReviewService {
 
     ReviewDto findById(Long id);
 
-    List<ReviewDto> findAllByHotelAndActive(HotelDto hotelDto);
+    List<ReviewDto> findAllByHotelAndActive(Long hotelId);
 }

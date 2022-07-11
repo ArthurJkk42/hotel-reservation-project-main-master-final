@@ -4,6 +4,7 @@ import com.megacom.hotelreservationprojectmainmasterfinal.dao.ReviewDao;
 import com.megacom.hotelreservationprojectmainmasterfinal.dao.ReviewResponseDao;
 import com.megacom.hotelreservationprojectmainmasterfinal.mappers.ReviewResponseMapper;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.dto.ReviewResponseDto;
+import com.megacom.hotelreservationprojectmainmasterfinal.models.entity.Review;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.entity.ReviewResponse;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.response.Message;
 import com.megacom.hotelreservationprojectmainmasterfinal.service.ReviewResponseService;
@@ -26,15 +27,17 @@ public class ReviewResponseServiceImpl implements ReviewResponseService {
 
     @Override
     public ResponseEntity<?> save(Long reviewId, ReviewResponseDto reviewResponseDto) {
-        boolean isExists = reviewDao.existsById(reviewId);
-        if (!isExists) {
-            return new ResponseEntity<>(Message.of("Review you wanted to respond to not found"), HttpStatus.OK);
+        Review review = reviewDao.findById(reviewId).orElse(null);
+        if (review == null) {
+            return new ResponseEntity<>(Message.of("Review not found"), HttpStatus.NOT_FOUND);
         } else {
             ReviewResponse reviewResponse = reviewResponseMapper.toEntity(reviewResponseDto);
 
             reviewResponse.setReviewResponseDate(new Date());
 
             ReviewResponse savedReviewResponse = reviewResponseDao.save(reviewResponse);
+            review.setReviewResponse(savedReviewResponse);
+            Review savedReview = reviewDao.save(review);
             return new ResponseEntity<>(savedReviewResponse, HttpStatus.OK);
         }
     }

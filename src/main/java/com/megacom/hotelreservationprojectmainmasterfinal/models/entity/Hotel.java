@@ -17,6 +17,7 @@ public class Hotel {
     private String address;
     private String phone;
     private String email;
+    //@Enumerated(value = EnumType.STRING) //TODO
     private EHotelStatus hotelStatus;
     @ManyToOne
     @JoinColumn(name = "city_id")

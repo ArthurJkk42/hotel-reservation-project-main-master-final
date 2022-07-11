@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 public class BookingHistoryServiceImpl implements BookingHistoryService {

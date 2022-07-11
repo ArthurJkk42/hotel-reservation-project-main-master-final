@@ -25,5 +25,4 @@ public class Review {
     private ReviewResponse reviewResponse;
     private Date reviewDate;
     private boolean isActive;
-
 }
