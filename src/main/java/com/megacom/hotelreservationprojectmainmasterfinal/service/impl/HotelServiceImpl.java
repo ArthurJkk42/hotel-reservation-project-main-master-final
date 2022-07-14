@@ -19,7 +19,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import java.text.DecimalFormat;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -67,7 +69,7 @@ public class HotelServiceImpl implements HotelService {
     public ResponseEntity<?> update(HotelDto hotelDto) {
         boolean isExists = hotelDao.existsById(hotelDto.getId());
         if (!isExists) {
-            return new ResponseEntity<>(Message.of("Hotel not found"), HttpStatus.OK);
+            return new ResponseEntity<>(Message.of("Hotel not found"), HttpStatus.NOT_FOUND);
         } else {
             Hotel hotel = hotelMapper.toEntity(hotelDto);
             Hotel updatedHotel = hotelDao.save(hotel);
@@ -77,13 +79,14 @@ public class HotelServiceImpl implements HotelService {
 
     @Override
     public ResponseEntity<?> setActive(HotelDto hotelDto) {
-        Hotel hotel = hotelMapper.toEntity(hotelDto);
-        hotel.setHotelStatus(EHotelStatus.ACTIVE);
-        ResponseEntity<?> deletedHotel = update(hotelMapper.toDto(hotel));
-        if (deletedHotel.getStatusCode().equals(HttpStatus.OK)) {
-            return new ResponseEntity<>(deletedHotel, HttpStatus.OK);
+        boolean isExists = hotelDao.existsById(hotelDto.getId());
+        if (!isExists) {
+            return new ResponseEntity<>(Message.of("Hotel not deleted"), HttpStatus.NOT_FOUND);
         } else {
-            return new ResponseEntity<>(Message.of("Hotel not activated"), HttpStatus.OK);
+            Hotel hotel = hotelMapper.toEntity(hotelDto);
+            hotel.setHotelStatus(EHotelStatus.ACTIVE);
+            Hotel updatedHotel = hotelDao.save(hotel);
+            return new ResponseEntity<>(updatedHotel, HttpStatus.OK);
         }
     }
 
@@ -91,7 +94,7 @@ public class HotelServiceImpl implements HotelService {
     public ResponseEntity<?> delete(HotelDto hotelDto) {
         boolean isExists = hotelDao.existsById(hotelDto.getId());
         if (!isExists) {
-            return new ResponseEntity<>(Message.of("Hotel not deleted"), HttpStatus.OK);
+            return new ResponseEntity<>(Message.of("Hotel not deleted"), HttpStatus.NOT_FOUND);
         } else {
             Hotel hotel = hotelMapper.toEntity(hotelDto);
             hotel.setHotelStatus(EHotelStatus.DELETED);
@@ -104,7 +107,7 @@ public class HotelServiceImpl implements HotelService {
     public ResponseEntity<?> block(HotelDto hotelDto) {
         boolean isExists = hotelDao.existsById(hotelDto.getId());
         if (!isExists) {
-            return new ResponseEntity<>(Message.of("Hotel not blocked"), HttpStatus.OK);
+            return new ResponseEntity<>(Message.of("Hotel not blocked"), HttpStatus.NOT_FOUND);
         } else {
             Hotel hotel = hotelMapper.toEntity(hotelDto);
             hotel.setHotelStatus(EHotelStatus.BLOCKED);
@@ -117,12 +120,17 @@ public class HotelServiceImpl implements HotelService {
     public void countCurrentScore() {
         List<HotelDto> hotelDtoList = findAll();
         hotelDtoList.stream().forEach(x -> {
+            if (x.getHotelStatus().equals(EHotelStatus.BLOCKED)
+                    || x.getHotelStatus().equals(EHotelStatus.DELETED)) {
+                hotelDtoList.remove(x);
+            }
             List<ReviewDto> reviewDtoList = reviewService.findAllByHotelAndActive(x.getId());
             Double sum = reviewDtoList.stream().mapToDouble(ReviewDto::getScore).sum();
-            Double currentScore = Math.round((sum / reviewDtoList.size()) / 10.0) * 10.0;
+            Double currentScore = Math.round(sum / reviewDtoList.size()) * 1.0;
 
             // на случай если double округление не работает
             String result = String.format("%.1f", currentScore);
+
 
             x.setCurrentScore(currentScore);
             update(x);
@@ -237,11 +245,9 @@ public class HotelServiceImpl implements HotelService {
                 } else {
                     long diff = checkOut.getTime() - priceForCheckIn.getEndDate().getTime();
                     int daysBetween = (int) (diff / (1000*60*60*24));
-                    System.out.println("START: " + daysBetween);
                     double sumBeginning = daysBetween * priceForCheckIn.getPrice();
                     long diff2 = checkOut.getTime() - priceForCheckOut.getStartDate().getTime();
                     int daysBetween2 = (int) (diff2 / (1000*60*60*24));
-                    System.out.println("START: " + daysBetween2);
                     double sumEnding = daysBetween2 * priceForCheckOut.getPrice();
                     double totalSum = sumBeginning + sumEnding;
 

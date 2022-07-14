@@ -39,13 +39,8 @@ public class PhotoServiceImpl implements PhotoService {
 
     @Override
     public List<PhotoDto> findAllPhotosByHotel(Hotel hotel) {
-        List<Photo> photoList = photoDao.findAllPhotoByHotel(hotel);
+        List<Photo> photoList = photoDao.findAllByHotelId(hotel.getId());
         return photoMapper.toDtoList(photoList);
-    }
-
-    @Override
-    public List<PhotoDto> uploadPhotos(List<PhotoDto> photoDto) {
-        return null;
     }
 
     @Override

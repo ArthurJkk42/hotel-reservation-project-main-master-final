@@ -4,6 +4,7 @@ import com.megacom.hotelreservationprojectmainmasterfinal.models.dto.HotelDto;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.enums.EBedType;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.response.HotelFilterResponse;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.Date;
 import java.util.List;

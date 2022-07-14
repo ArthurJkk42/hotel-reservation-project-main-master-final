@@ -1,11 +1,13 @@
 package com.megacom.hotelreservationprojectmainmasterfinal.controllers;
 
 import com.megacom.hotelreservationprojectmainmasterfinal.models.dto.BookingDto;
+import com.megacom.hotelreservationprojectmainmasterfinal.models.dto.PhotoDto;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.dto.ReviewDto;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.enums.EBedType;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.response.HotelFilterResponse;
 import com.megacom.hotelreservationprojectmainmasterfinal.service.BookingService;
 import com.megacom.hotelreservationprojectmainmasterfinal.service.HotelService;
+import com.megacom.hotelreservationprojectmainmasterfinal.service.PhotoService;
 import com.megacom.hotelreservationprojectmainmasterfinal.service.ReviewService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -22,11 +24,7 @@ public class UserController {
     @Autowired private BookingService bookingService;
     @Autowired private HotelService hotelService;
     @Autowired private ReviewService reviewService;
-
-    @GetMapping("/findHotelsByCityAndRating")
-    ResponseEntity<?> findHotelsByCityAndRating(@RequestParam Long cityId) {
-        return hotelService.findHotelsByCityIdAndRating(cityId);
-    }
+    @Autowired private PhotoService photoService;
 
     @GetMapping("/filterByCity")
     ResponseEntity<?> filterByCity(@RequestParam Long cityId,
@@ -39,44 +37,34 @@ public class UserController {
         return hotelService.filterByCity(cityId, checkInDate, checkOutDate, guestCount, bedType);
     }
 
-    @GetMapping("/filterByRating")
-    ResponseEntity<?> filterByRating(@RequestBody List<HotelFilterResponse> filteredHotels,
-                                     @RequestParam double rating) {
-        return hotelService.filterByRating(filteredHotels, rating);
-    }
-
-    @PostMapping("/book")
+    @PostMapping("/book") // works
     ResponseEntity<?> book(@RequestBody BookingDto bookingDto) {
         return bookingService.save(bookingDto);
     }
 
-    @PutMapping("/update/booking")
+    @PutMapping("/update/booking") // works
     ResponseEntity<?> updateBook(@RequestBody BookingDto bookingDto) {
         return bookingService.update(bookingDto);
     }
 
-    @PutMapping("/cancel/booking")
-    ResponseEntity<?> cancelBooking(@RequestBody BookingDto bookingDto,@RequestParam String comment,@RequestParam Long userId) {
+    @PutMapping("/cancel/booking") // works
+    ResponseEntity<?> cancelBooking(@RequestBody BookingDto bookingDto,@RequestParam String comment, @RequestParam Long userId) {
         return bookingService.cancel(bookingDto, comment, userId);
     }
 
-    @DeleteMapping("/delete/booking")
-    ResponseEntity<?> deleteBook(@RequestBody BookingDto bookingDto) {
-        return bookingService.delete(bookingDto);
-    }
-
-    @PostMapping("/review")
+    @PostMapping("/review") // works
     ResponseEntity<?> reviewDto(@RequestBody ReviewDto reviewDto) {
          return reviewService.save(reviewDto);
     }
 
-    @PutMapping("/update/review")
+    @PutMapping("/update/review") // works
     ResponseEntity<?> updateReview(@RequestBody ReviewDto reviewDto) {
         return reviewService.update(reviewDto);
     }
 
-    @DeleteMapping("/delete/review")
+    @DeleteMapping("/delete/review") // works
     ResponseEntity<?> deleteReview(@RequestBody ReviewDto reviewDto) {
         return reviewService.delete(reviewDto);
     }
+
 }

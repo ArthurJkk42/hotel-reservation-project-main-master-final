@@ -73,6 +73,4 @@ public class ReviewResponseServiceImpl implements ReviewResponseService {
             return new ResponseEntity<>(Message.of("ReviewResponse deleted"), HttpStatus.OK);
         }
     }
-
-
 }

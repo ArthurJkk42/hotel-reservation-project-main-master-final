@@ -120,11 +120,6 @@ public class BookingServiceImpl implements BookingService {
             return new ResponseEntity<>(Message.of("Booking not found"), HttpStatus.NOT_FOUND);
         } else {
             try {
-                if (bookingDto.getCheckInDate().after(bookingDto.getCheckOutDate())
-                        || bookingDto.getCheckInDate().equals(bookingDto.getCheckOutDate())
-                        || bookingDto.getCheckOutDate().before(bookingDto.getCheckInDate())) {
-                    return new ResponseEntity<>(Message.of("Invalid date input"), HttpStatus.NOT_ACCEPTABLE);
-                }
                 Booking booking = bookingMapper.toEntity(bookingDto);
                 booking.setStatus(EBookingStatus.CANCELLED);
                 Booking savedBooking = bookingDao.save(booking);
@@ -157,11 +152,6 @@ public class BookingServiceImpl implements BookingService {
             return new ResponseEntity<>(Message.of("Booking not found"), HttpStatus.NOT_FOUND);
         } else {
             try {
-                if (bookingDto.getCheckInDate().after(bookingDto.getCheckOutDate())
-                        || bookingDto.getCheckInDate().equals(bookingDto.getCheckOutDate())
-                        || bookingDto.getCheckOutDate().before(bookingDto.getCheckInDate())) {
-                    return new ResponseEntity<>(Message.of("Invalid date input"), HttpStatus.NOT_ACCEPTABLE);
-                }
                 Booking booking = bookingMapper.toEntity(bookingDto);
                 booking.setStatus(EBookingStatus.DELETED);
                 Booking savedBooking = bookingDao.save(booking);

@@ -4,6 +4,7 @@ import com.megacom.hotelreservationprojectmainmasterfinal.models.dto.CityDto;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.dto.HotelDto;
 import com.megacom.hotelreservationprojectmainmasterfinal.service.CityService;
 import com.megacom.hotelreservationprojectmainmasterfinal.service.HotelService;
+import com.sun.xml.bind.v2.TODO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,47 +16,38 @@ public class AdminController {
     @Autowired private HotelService hotelService;
     @Autowired private CityService cityService;
 
-    @PostMapping("/saveCity") // works
+    @PostMapping("/save/city") // works
     public ResponseEntity<?> saveCity(@RequestBody CityDto cityDto) {
         return cityService.save(cityDto);
     }
 
-    @PutMapping("/updateCity") // works
+    @PutMapping("/update/city") // works
     public ResponseEntity<?> updateCity(@RequestBody CityDto cityDto) {
         return cityService.update(cityDto);
     }
 
-    @DeleteMapping("/deleteCity") // works
+    @DeleteMapping("/delete/city") // works
     public ResponseEntity<?> deleteCity(@RequestBody CityDto cityDto) {
         return cityService.delete(cityDto);
     }
 
-    @PostMapping("/saveHotel") // works
-    public ResponseEntity<?> saveHotel(@RequestBody HotelDto hotelDto) {
-        return hotelService.save(hotelDto);
-    }
-
-    @PutMapping("/update/hotel") // works
-    public ResponseEntity<?> updateHotel(@RequestBody HotelDto hotelDto) {
-        return hotelService.update(hotelDto);
-    }
-
-    @DeleteMapping("/delete/hotel") // works
-    public ResponseEntity<?> deleteHotel(@RequestBody HotelDto hotelDto) {
-        return hotelService.delete(hotelDto);
-    }
-
-    @PutMapping("/setActive")
+    @PutMapping("/set/active") // works
     ResponseEntity<?> setActive(@RequestBody HotelDto hotelDto) {
         return hotelService.setActive(hotelDto);
     }
 
-    @PostMapping("/blockHotel")
+    @PutMapping("/block/hotel") // works
     ResponseEntity<?> block(@RequestBody HotelDto hotelDto) {
         return hotelService.block(hotelDto);
     }
 
-    @GetMapping("/findAllCities")
+    @PutMapping("/delete/hotel") // works
+    ResponseEntity<?> delete(@RequestBody HotelDto hotelDto) {
+        return hotelService.delete(hotelDto);
+    }
+
+
+    @GetMapping("/find/all/cities") // works
     ResponseEntity<?> findAllCities() {
         return cityService.findAll();
     }

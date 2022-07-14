@@ -10,6 +10,6 @@ import java.util.List;
 @Repository
 public interface CityDao extends JpaRepository<City, Long> {
 
-    @Query(value = "select * from tb_city order by c name ASC", nativeQuery = true)
+    @Query(value = "select * from tb_city c order by c.name ASC", nativeQuery = true)
     List<City> findAllByName();
 }

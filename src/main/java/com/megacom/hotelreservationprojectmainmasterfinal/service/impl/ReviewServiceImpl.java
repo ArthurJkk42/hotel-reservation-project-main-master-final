@@ -6,6 +6,7 @@ import com.megacom.hotelreservationprojectmainmasterfinal.mappers.HotelMapper;
 import com.megacom.hotelreservationprojectmainmasterfinal.mappers.ReviewMapper;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.dto.HotelDto;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.dto.ReviewDto;
+import com.megacom.hotelreservationprojectmainmasterfinal.models.entity.Hotel;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.entity.Review;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.response.Message;
 import com.megacom.hotelreservationprojectmainmasterfinal.service.HotelService;
@@ -37,6 +38,14 @@ public class ReviewServiceImpl implements ReviewService {
             return new ResponseEntity<>(Message.of("Invalid score input"), HttpStatus.NOT_ACCEPTABLE);
         }
         Review review = reviewMapper.toEntity(reviewDto);
+
+        double score = review.getScore();
+        if (score % 1 == 0) {
+            review.setScore(score);
+        } else {
+            double finalScore = Math.round((score)*10)/10;
+            review.setScore(finalScore);
+        }
 
         review.setReviewDate(new Date());
 

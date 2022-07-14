@@ -14,6 +14,4 @@ public interface PhotoService {
     String findMainPhoto(Hotel hotel);
 
     List<PhotoDto> findAllPhotosByHotel(Hotel hotel);
-
-    List<PhotoDto> uploadPhotos(List<PhotoDto> photoDto);
 }

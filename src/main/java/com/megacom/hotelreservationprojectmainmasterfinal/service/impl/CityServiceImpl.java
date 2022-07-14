@@ -33,7 +33,7 @@ public class CityServiceImpl implements CityService {
     public ResponseEntity<?> update(CityDto cityDto) {
         boolean isExists = cityDao.existsById(cityDto.getId());
         if (!isExists) {
-            return new ResponseEntity<>(Message.of("City not updated"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(Message.of("City not found"), HttpStatus.NOT_FOUND);
         } else {
             City savedCity = cityDao.save(cityMapper.toEntity(cityDto));
             return new ResponseEntity<>(cityMapper.toDto(savedCity), HttpStatus.OK);
@@ -44,7 +44,7 @@ public class CityServiceImpl implements CityService {
     public ResponseEntity<?> delete(CityDto cityDto) {
         boolean isExists = cityDao.existsById(cityDto.getId());
         if (!isExists) {
-            return new ResponseEntity<>(Message.of("City not deleted"), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(Message.of("City not found"), HttpStatus.NOT_FOUND);
         } else {
             City savedCity = cityDao.save(cityMapper.toEntity(cityDto));
             savedCity.setActive(false);

@@ -38,7 +38,6 @@ public class RoomAndPriceServiceImpl implements RoomAndPriceService {
     @Override
     @Transactional
     public ResponseEntity<?> save(RoomCategoryAndPriceRequest roomAndPriceRequest) {
-
         if (roomAndPriceRequest.getStartDate().equals(roomAndPriceRequest.getEndDate())
                 || roomAndPriceRequest.getStartDate().after(roomAndPriceRequest.getEndDate())
                 || roomAndPriceRequest.getEndDate().before(roomAndPriceRequest.getStartDate())) {

@@ -1,8 +1,9 @@
 package com.megacom.hotelreservationprojectmainmasterfinal.service;
 
-import com.megacom.hotelreservationprojectmainmasterfinal.models.dto.BookingDto;
 import com.megacom.hotelreservationprojectmainmasterfinal.models.dto.BookingHistoryDto;
+import org.springframework.http.ResponseEntity;
 
+import java.util.Date;
 import java.util.List;
 
 public interface BookingHistoryService {
@@ -11,5 +12,7 @@ public interface BookingHistoryService {
 
     BookingHistoryDto findById(Long id);
 
-    List<BookingHistoryDto> findAllBookingHistoryByBooking(BookingDto bookingDto);
+    ResponseEntity<?> findAllBookingHistoryByBooking(Long hotelId);
+
+    ResponseEntity<?> findBookingByDate(Date checkIn, Date checkOut);
 }

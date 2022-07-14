@@ -11,7 +11,8 @@ public class RatingCountScheduler {
     @Autowired
     HotelService hotelService;
 
-    @Scheduled(cron = "0 55 23 * * *")
+    //@Scheduled(cron = "0 55 23 * * *")
+    @Scheduled(cron = "0 0/1 * * * *")
     public void scheduledFixedDelayTask() {
         hotelService.countCurrentScore();
     }
